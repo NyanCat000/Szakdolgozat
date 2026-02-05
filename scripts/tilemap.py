@@ -26,8 +26,8 @@ class Tilemap:
         rects = []
         for tile in self.neighbouring_tiles(position):
             if tile['type'] == "dirt":
-                rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, 
-                                         tile['pos'][1] * self.tile_size, 
+                rects.append(pygame.Rect(tile['position'][0] * self.tile_size, 
+                                         tile['position'][1] * self.tile_size, 
                                          self.tile_size, 
                                          self.tile_size))
         return rects
