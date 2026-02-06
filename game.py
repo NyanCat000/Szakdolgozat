@@ -1,9 +1,9 @@
 import sys
 import pygame
 
-from scripts.utilities import image, images
+from scripts.utilities import image, images, Animation
 from scripts.tilemap import Tilemap
-from scripts.character_physics import Physics
+from scripts.character_physics import Player
 
 class Game:
     def __init__(self):
@@ -12,9 +12,8 @@ class Game:
         self.display = pygame.Surface((200, 150))
         self.clock = pygame.time.Clock()
 
-        self.tilemap = Tilemap(self)
-        self.player = Physics(self, "player", (50, 50), (11, 11))
-        self.movement = [0, 0]
+        
+        self.movement = [False, False]
         self.offset = [0, 0]
 
         self.imgs = {
@@ -22,8 +21,14 @@ class Game:
             "flowers": images("tiles/decor/flowers"),
             "large_decor": images("tiles/decor/large_decors"),
             "spikes": images("tiles/spikes"),
-            "player": image("tiles/character_spawn/1.png")
+            "player": image("tiles/character_spawn/1.png"),
+            "player/idle": Animation(images("characters/player/idle"), duration=6),
+            "player/run": Animation(images("characters/player/run"), duration=5),
+            "player/jump": Animation(images("characters/player/jump"), duration=10)
         }
+
+        self.tilemap = Tilemap(self)
+        self.player = Player(self, (50, 50), (11, 11))
 
     def run(self):
         self.running = True

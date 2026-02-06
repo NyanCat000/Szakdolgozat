@@ -9,6 +9,15 @@ class Physics:
 
         self.velocity = [0, 0]
         self.collisions = {"left": False, "right": False, "up": False, "down": False}
+
+        self.action = ""
+        self.flip = False
+        self.current_action("idle")
+
+    def current_action(self, action):
+        if action != self.action:
+            self.action = action
+            self.animation = self.game.imgs[self.character_type + "/" + self.action].copy()
         
     def update(self, tilemap, movement=(0, 0)):
         self.collisions = {"left": False, "right": False, "up": False, "down": False}
@@ -24,10 +33,10 @@ class Physics:
             if character_rect.colliderect(rect):
                 if frame_movement[0] < 0:
                     character_rect.left = rect.right
-                    self.collisions['left'] = True
+                    self.collisions["left"] = True
                 if frame_movement[0] > 0:
                     character_rect.right = rect.left
-                    self.collisions['right'] = True
+                    self.collisions["right"] = True
                 self.position[0] = character_rect.x
         
         self.position[1] += frame_movement[1]
@@ -39,17 +48,46 @@ class Physics:
             if character_rect.colliderect(rect):
                 if frame_movement[1] < 0:
                     character_rect.top = rect.bottom
-                    self.collisions['up'] = True
+                    self.collisions["up"] = True
                 if frame_movement[1] > 0:
                     character_rect.bottom = rect.top
-                    self.collisions['down'] = True
+                    self.collisions["down"] = True
                 self.position[1] = character_rect.y
         
         self.velocity[1] += 0.2
         
-        if self.collisions['up'] or self.collisions['down']:
+        if self.collisions["up"] or self.collisions["down"]:
             self.velocity[1] = 0
+
+        if movement[0] < 0:
+            self.flip = True
+        elif movement[0] > 0:
+            self.flip = False
+
+        self.animation.update()
         
     def render(self, surface, offset=(0, 0)):
-        surface.blit(self.game.imgs['player'], (self.position[0] - offset[0], self.position[1] - offset[1]))
+        surface.blit(pygame.transform.flip(self.animation.current_image(), self.flip, False), 
+                     (self.position[0] - offset[0], 
+                      self.position[1] - offset[1]))
+        
+class Player(Physics):
+    def __init__(self, game, position, character_size):
+        super().__init__(game, "player", position, character_size)
+        self.air_time = 0
+
+    def update(self, tilemap, movement=(0, 0)):
+        super().update(tilemap, movement)
+
+        if self.collisions["down"]:
+            self.air_time = 0
+        else:
+            self.air_time += 1
+
+        if self.air_time > 3:
+            self.current_action("jump")
+        elif movement[0] != 0:
+            self.current_action("run")
+        else:
+            self.current_action("idle")
         

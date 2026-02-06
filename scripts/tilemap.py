@@ -11,7 +11,7 @@ class Tilemap:
 
         for i in range(10):
             self.tilemap[str(3 + i) + ';10'] = {'type': 'dirt', 'variant': 1, 'position': (3 + i, 10)}
-            self.tilemap['10;' + str(5 + i)] = {'type': 'dirt', 'variant': 1, 'position': (10, 5 + i)}
+            self.tilemap['10;' + str(5 + i)] = {'type': 'dirt', 'variant': 2, 'position': (10, 5 + i)}
     
     def neighbouring_tiles(self, position):
         tiles = []
