@@ -8,8 +8,9 @@ from scripts.character_physics import Player
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
-        self.display = pygame.Surface((200, 150))
+        self.screen = pygame.display.set_mode((0, 0))
+        self.screen_size = self.screen.get_size()
+        self.display = pygame.Surface((self.screen_size[0]/6, self.screen_size[1]/6))
         self.clock = pygame.time.Clock()
 
         
@@ -28,6 +29,7 @@ class Game:
         }
 
         self.tilemap = Tilemap(self)
+        self.tilemap.load("assets/maps/00.json")
         self.player = Player(self, (50, 50), (11, 11))
 
     def run(self):
@@ -51,9 +53,6 @@ class Game:
             self.player.render(self.display, render_offset)
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_a:
                         self.movement[0] = True
@@ -61,6 +60,9 @@ class Game:
                         self.movement[1] = True
                     if event.key == pygame.K_w:
                         self.player.velocity[1] = -4
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False

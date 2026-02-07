@@ -1,4 +1,5 @@
 import pygame
+import json
 
 NEIGHBOUR_TILES = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
 
@@ -25,20 +26,34 @@ class Tilemap:
     def neighbouring_dirt_tiles(self, position):
         rects = []
         for tile in self.neighbouring_tiles(position):
-            if tile['type'] == "dirt":
-                rects.append(pygame.Rect(tile['position'][0] * self.tile_size, 
-                                         tile['position'][1] * self.tile_size, 
+            if tile["type"] == "dirt":
+                rects.append(pygame.Rect(tile["position"][0] * self.tile_size, 
+                                         tile["position"][1] * self.tile_size, 
                                          self.tile_size, 
                                          self.tile_size))
         return rects
+    
+    def save(self, path):
+        file = open(path, "w")
+        json.dump({"tilemap": self.tilemap, "tile_size": self.tile_size, "offgrid": self.offgrid_tiles}, file)
+        file.close()
+        
+    def load(self, path):
+        file = open(path, "r")
+        map_data = json.load(file)
+        file.close()
+        
+        self.tilemap = map_data["tilemap"]
+        self.tile_size = map_data["tile_size"]
+        self.offgrid_tiles = map_data["offgrid"]
 
     def render(self, surface, offset=(0, 0)):
+        for tile in self.offgrid_tiles:
+            surface.blit(self.game.imgs[tile["type"]][tile["variant"]], 
+                         (tile["position"][0] - offset[0], tile["position"][1] - offset[1]))
+            
         for location in self.tilemap:
             tile = self.tilemap[location]
-            surface.blit(self.game.imgs[tile['type']][tile['variant']], 
-                         (tile['position'][0] * self.tile_size - offset[0], 
-                          tile['position'][1] * self.tile_size - offset[1]))
-
-        for tile in self.offgrid_tiles:
-            surface.blit(self.game.imgs[tile['type']][tile['variant']], 
-                         (tile['position'][0] - offset[0], tile['position'][1] - offset[1]))
+            surface.blit(self.game.imgs[tile["type"]][tile["variant"]], 
+                         (tile["position"][0] * self.tile_size - offset[0], 
+                          tile["position"][1] * self.tile_size - offset[1]))
