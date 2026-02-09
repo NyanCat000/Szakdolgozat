@@ -65,9 +65,9 @@ class Editor:
                 
                 if self.put_down_tile:
                     if self.ongrid:
-                        self.tilemap.tilemap[str(tile_position[0]) + ";" + str(tile_position[1])] = {"type": self.list[self.type], 
-                                                                                                     "variant": self.variant, 
-                                                                                                     "position": tile_position}
+                        self.tilemap.tilemap[f"{tile_position[0]};{tile_position[1]}"] = {"type": self.list[self.type],
+                                                                                          "variant": self.variant,
+                                                                                          "position": tile_position}
                     else:
                         self.tilemap.offgrid_tiles.append({"type": self.list[self.type], 
                                                            "variant": self.variant,
@@ -75,7 +75,7 @@ class Editor:
                                                                         mouse_position[1] + self.offset[1])})
 
                 if self.delete_tile:
-                    location = str(tile_position[0]) + ";" + str(tile_position[1])
+                    location = f"{tile_position[0]};{tile_position[1]}"
                     if location in self.tilemap.tilemap:
                         del self.tilemap.tilemap[location]
                     for offgrid_tile in self.tilemap.offgrid_tiles.copy():
@@ -96,6 +96,10 @@ class Editor:
                         self.variant += 1
                         if self.variant >= len(self.imgs[self.list[self.type]]):
                             self.variant = 0
+                    if event.button == 5:
+                        self.variant -= 1
+                        if self.variant < 0:
+                            self.variant = len(self.imgs[self.list[self.type]]) - 1
                 if event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                         self.put_down_tile = False

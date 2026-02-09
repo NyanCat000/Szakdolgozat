@@ -9,16 +9,12 @@ class Tilemap:
         self.tile_size = tile_size
         self.tilemap = {}
         self.offgrid_tiles = []
-
-        for i in range(10):
-            self.tilemap[str(3 + i) + ';10'] = {'type': 'dirt', 'variant': 1, 'position': (3 + i, 10)}
-            self.tilemap['10;' + str(5 + i)] = {'type': 'dirt', 'variant': 2, 'position': (10, 5 + i)}
     
     def neighbouring_tiles(self, position):
         tiles = []
         tile_location = (int(position[0] // self.tile_size), int(position[1] // self.tile_size))
         for neighbour in NEIGHBOUR_TILES:
-            check_location = str(tile_location[0] + neighbour[0]) + ';' + str(tile_location[1] + neighbour[1])
+            check_location = f"{tile_location[0] + neighbour[0]};{tile_location[1] + neighbour[1]}"
             if check_location in self.tilemap:
                 tiles.append(self.tilemap[check_location])
         return tiles
@@ -27,7 +23,7 @@ class Tilemap:
         rects = []
         for tile in self.neighbouring_tiles(position):
             if tile["type"] == "dirt":
-                rects.append(pygame.Rect(tile["position"][0] * self.tile_size, 
+                rects.append(pygame.Rect(tile["position"][0] * self.tile_size,
                                          tile["position"][1] * self.tile_size, 
                                          self.tile_size, 
                                          self.tile_size))
@@ -46,6 +42,14 @@ class Tilemap:
         self.tilemap = map_data["tilemap"]
         self.tile_size = map_data["tile_size"]
         self.offgrid_tiles = map_data["offgrid"]
+
+    def get_player_spawn(self):
+        spawn = ()
+        for tile in self.offgrid_tiles.copy():
+            if tile["type"] == "character_spawn":
+                spawn = tile["position"]
+                self.offgrid_tiles.remove(tile)
+        return spawn
 
     def render(self, surface, offset=(0, 0)):
         for tile in self.offgrid_tiles:

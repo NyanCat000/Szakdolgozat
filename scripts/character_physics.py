@@ -75,14 +75,19 @@ class Player(Physics):
     def __init__(self, game, position, character_size):
         super().__init__(game, "player", position, character_size)
         self.air_time = 0
+        self.jumps = 1
 
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement)
-
+        
         if self.collisions["down"]:
             self.air_time = 0
+            self.jumps = 1
         else:
             self.air_time += 1
+
+        if self.air_time > 100:
+            self.game.dead = True
 
         if self.air_time > 3:
             self.current_action("jump")
@@ -90,4 +95,11 @@ class Player(Physics):
             self.current_action("run")
         else:
             self.current_action("idle")
+
+    def jump(self):
+        if self.air_time < 4:
+            if self.jumps > 0:
+                self.velocity[1] = -4
+                self.jumps -= 1
+                self.air_time = 4
         

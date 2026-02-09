@@ -12,32 +12,39 @@ class Game:
         self.screen_size = self.screen.get_size()
         self.display = pygame.Surface((self.screen_size[0]/6, self.screen_size[1]/6))
         self.clock = pygame.time.Clock()
-
         
         self.movement = [False, False]
-        self.offset = [0, 0]
 
         self.imgs = {
             "dirt": images("tiles/dirt"),
             "flowers": images("tiles/decor/flowers"),
             "large_decor": images("tiles/decor/large_decors"),
             "spikes": images("tiles/spikes"),
-            "player": image("tiles/character_spawn/1.png"),
+            "character_spawn": images("tiles/character_spawn"),
             "player/idle": Animation(images("characters/player/idle"), duration=6),
             "player/run": Animation(images("characters/player/run"), duration=5),
             "player/jump": Animation(images("characters/player/jump"), duration=10)
         }
 
         self.tilemap = Tilemap(self)
-        self.tilemap.load("assets/maps/00.json")
-        self.player = Player(self, (50, 50), (11, 11))
+        self.player = Player(self, (0,0), (11, 11))
+        self.load_map("00")
 
+    def load_map(self, map):
+        self.tilemap.load(f"assets/maps/{map}.json")
+        self.player.position = self.tilemap.get_player_spawn()
+        self.player.air_time = 0
+        self.offset = [0, 0]
+        self.dead = False
+    
     def run(self):
         self.running = True
         while self.running:
 
             self.display.fill((0, 0, 255))
             
+            if self.dead:
+                self.load_map("00")
             
             character_rect = pygame.Rect(self.player.position[0], 
                                          self.player.position[1], 
@@ -48,9 +55,11 @@ class Game:
             render_offset = (int(self.offset[0]), int(self.offset[1]))
 
             self.tilemap.render(self.display, render_offset)
-            self.player.update(self.tilemap, 
-                               (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display, render_offset)
+            
+            if not self.dead:
+                self.player.update(self.tilemap, 
+                                (self.movement[1] - self.movement[0], 0))
+                self.player.render(self.display, render_offset)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -59,7 +68,7 @@ class Game:
                     if event.key == pygame.K_d:
                         self.movement[1] = True
                     if event.key == pygame.K_w:
-                        self.player.velocity[1] = -4
+                        self.player.jump()
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
