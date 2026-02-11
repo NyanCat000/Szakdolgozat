@@ -4,8 +4,7 @@ import pygame
 class Cloud:
     def __init__(self, position, image, speed):
         self.position = list(position)
-        self.image = image 
-        self.image.set_alpha(100)
+        self.image = image
         self.speed = speed
 
     def update(self):
@@ -24,20 +23,21 @@ class Cloud:
 
 
 class Clouds: 
-    def __init__(self, image, count):
+    def __init__(self, image, type, count):
         self.clouds = []
         screen_width = pygame.display.get_surface().get_width()
         screen_height = pygame.display.get_surface().get_height()
 
+        if type == 0:
+            speed = 0.1
+            image.set_alpha(180)
+        if type == 1:
+            speed = 0.05
+            image.set_alpha(120)
+
         for cloud in range(count):
-            cloud_scale = random.uniform(0.5, 1.5)
-            speed = 0.05 / cloud_scale
-            cloud_size = pygame.transform.scale(image, 
-                                                (int(image.get_width() * cloud_scale),
-                                                 int(image.get_height() * cloud_scale)))
-            
             self.clouds.append(Cloud((random.uniform(0, screen_width), random.uniform(0, screen_height)),
-                                     cloud_size,
+                                     image,
                                      speed))
 
     def update(self):

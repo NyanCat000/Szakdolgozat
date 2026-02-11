@@ -27,7 +27,8 @@ class Game:
             "player/jump": Animation(images("characters/player/jump"), duration=10)
         }
 
-        self.clouds = Clouds(image("clouds/0.png"), count=8)
+        self.clouds_close = Clouds(image("clouds/0.png"), type = 0, count=4)
+        self.clouds_far = Clouds(image("clouds/1.png"), type = 1, count=3)
         self.tilemap = Tilemap(self)
         self.player = Player(self, (0,0), (11, 11))
         self.load_map("00")
@@ -57,8 +58,10 @@ class Game:
             self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 15
             render_offset = (int(self.offset[0]), int(self.offset[1]))
 
-            self.clouds.update()
-            self.clouds.render(self.display, render_offset)
+            self.clouds_far.update()
+            self.clouds_close.update()
+            self.clouds_far.render(self.display, render_offset)
+            self.clouds_close.render(self.display, render_offset)
             self.tilemap.render(self.display, render_offset)
             
             if not self.dead:
