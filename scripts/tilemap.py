@@ -9,6 +9,12 @@ class Tilemap:
         self.tile_size = tile_size
         self.tilemap = {}
         self.offgrid_tiles = []
+
+        self.spike_masks = {}
+        variant = 0
+        for spike in self.game.imgs["spikes"]:
+            self.spike_masks[variant] = pygame.mask.from_surface(spike)
+            variant += 1
     
     def neighbouring_tiles(self, position):
         tiles = []
@@ -28,6 +34,22 @@ class Tilemap:
                                          self.tile_size, 
                                          self.tile_size))
         return rects
+    
+    def neighbouring_spikes(self, position): 
+        spikes = []
+        for tile in self.neighbouring_tiles(position): 
+            if tile["type"] == "spikes": 
+                rect = pygame.Rect(tile["position"][0] * self.tile_size,
+                                   tile["position"][1] * self.tile_size,
+                                   self.tile_size, self.tile_size)
+                mask = self.spike_masks[tile["variant"]]
+
+                spikes.append({
+                    "rect": rect, 
+                    "mask": mask
+                })
+
+        return spikes
     
     def save(self, path):
         file = open(path, "w")
@@ -50,7 +72,7 @@ class Tilemap:
                 spawn = tile["position"]
                 self.offgrid_tiles.remove(tile)
         return spawn
-
+    
     def render(self, surface, offset=(0, 0)):
         for tile in self.offgrid_tiles:
             surface.blit(self.game.imgs[tile["type"]][tile["variant"]], 

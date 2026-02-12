@@ -96,10 +96,17 @@ class Player(Physics):
         else:
             self.current_action("idle")
 
+        image = self.animation.current_image()
+        if self.flip:
+            image = pygame.transform.flip(image, True, False)
+        self.mask = pygame.mask.from_surface(image)
+
     def jump(self):
         if self.air_time < 4:
             if self.jumps > 0:
                 self.velocity[1] = -4
                 self.jumps -= 1
                 self.air_time = 4
+
+    
         

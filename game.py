@@ -58,6 +58,15 @@ class Game:
             self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 15
             render_offset = (int(self.offset[0]), int(self.offset[1]))
 
+            for spike in self.tilemap.neighbouring_spikes(self.player.position):
+                if character_rect.colliderect(spike["rect"]):
+                    offset = (spike["rect"].x - self.player.position[0],
+                                spike["rect"].y - self.player.position[1])
+
+                    if self.player.mask.overlap(spike["mask"], offset):
+                        self.dead = True
+                        break
+
             self.clouds_far.update()
             self.clouds_close.update()
             self.clouds_far.render(self.display, render_offset)
