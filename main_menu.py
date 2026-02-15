@@ -2,7 +2,6 @@ import sys
 import pygame
 
 from scripts.utilities import image
-from levels import Levels
 from scripts.button import Button
 
 class Menu:
@@ -16,6 +15,7 @@ class Menu:
         self.main_font = pygame.font.Font("assets/fonts/PermanentMarker-Regular.ttf", 80)
         self.secondary_font = pygame.font.Font("assets/fonts/Schoolbell-Regular.ttf", 40)
         
+        self.confirm = False
         self.confirm_button = []
 
         self.buttons = []
@@ -54,30 +54,27 @@ class Menu:
         bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.display.get_size())
         sure_text = self.secondary_font.render("Are you sure?", True, (65, 65, 65))
         
-        while True:
-            mouse_pos = pygame.mouse.get_pos()
-            self.display.blit(bgr, (0, 0))
-            self.display.blit(quit_screen_overlay, (0,0))
+        
+        mouse_pos = pygame.mouse.get_pos()
+        self.display.blit(bgr, (0, 0))
+        self.display.blit(quit_screen_overlay, (0,0))
 
-            pygame.draw.rect(self.display, (55, 200, 100), pop_up_rect, border_radius=50)
-            pygame.draw.rect(self.display, (100, 100, 100), pop_up_rect, 5 ,border_radius=50)
-            sure_text_rect = sure_text.get_rect(center=(pop_up_rect.centerx, pop_up_rect.centery - 40))
-            self.display.blit(sure_text, sure_text_rect)
+        pygame.draw.rect(self.display, (55, 200, 100), pop_up_rect, border_radius=50)
+        pygame.draw.rect(self.display, (100, 100, 100), pop_up_rect, 5 ,border_radius=50)
+        sure_text_rect = sure_text.get_rect(center=(pop_up_rect.centerx, pop_up_rect.centery - 40))
+        self.display.blit(sure_text, sure_text_rect)
 
-            for button in self.confirm_button:
-                button.draw(self.display)
-            
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if yes_button.rect.collidepoint(mouse_pos):
-                            pygame.quit()
-                            sys.exit()
-                        if no_button.rect.collidepoint(mouse_pos):
-                            return
-                        
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))
-            pygame.display.update()
+        for button in self.confirm_button:
+            button.draw(self.display)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if yes_button.rect.collidepoint(mouse_pos):
+                        pygame.quit()
+                        sys.exit()
+                    if no_button.rect.collidepoint(mouse_pos):
+                        self.confirm = False
     
     def run(self):
         self.running = True
@@ -89,6 +86,9 @@ class Menu:
 
             for button in self.buttons:
                 button.draw(self.display)
+
+            if self.confirm:
+                self.quit()
            
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -96,9 +96,10 @@ class Menu:
                         for button in self.buttons:
                             if button.rect.collidepoint(mouse_pos):
                                 if button.text == "levels":
+                                     from levels import Levels
                                      Levels().run()
                                 if button.text == "quit":
-                                    self.quit()
+                                    self.confirm = True
                     
             
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))

@@ -6,6 +6,7 @@ from scripts.utilities import image, images, Animation
 from scripts.tilemap import Tilemap
 from scripts.character_physics import Player
 from scripts.clouds import Clouds
+from scripts.button import Button
 
 class Game:
     def __init__(self, start_level = 0):
@@ -18,7 +19,11 @@ class Game:
         self.movement = [False, False]
 
         self.main_font = pygame.font.Font("assets/fonts/PermanentMarker-Regular.ttf", 80)
-        self.secondary_font = pygame.font.Font("assets/fonts/Schoolbell-Regular.ttf", 40)
+        self.button_font = pygame.font.Font("assets/fonts/PermanentMarker-Regular.ttf", 50)
+        
+        self.paused = False
+        self.buttons = []
+        self.pause_buttons()
 
         self.imgs = {
             "dirt": images("tiles/dirt"),
@@ -48,56 +53,36 @@ class Game:
         self.dead = False
         self.finish = False
     
-    def pause(self):
-        pause_overlay = pygame.Surface(self.display.get_size())
-        pause_overlay.fill((0,0,0))
-        pause_overlay.set_alpha(200)
+    def pause_buttons(self):
+        button_names = ["resume", "options", "controls", "return to main menu"]
+        center_y = self.screen.get_height() / 2 - 75
+        y_offset = 150
 
-        bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.display.get_size())
+        for i in range(len(button_names)):
+            name = button_names[i]
+            button_rect = pygame.Rect(0, 0, 550, 100)
+            button_rect.centerx = self.screen.get_width() / 2
+            button_rect.centery = center_y + i * y_offset
+
+            button = Button(button_rect, name, self.button_font, border_radius=150)
+            self.buttons.append(button)
+
+    def pause(self):
+        bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.screen_size)
+        bgr.set_alpha(100)
+
+        pause_text = self.main_font.render("paused", True, (65,65,65))
+        pause_text_rect = pause_text.get_rect(center=(self.screen.get_width() / 2, 100))
+        self.screen.blit(bgr, (0,0))
+        self.screen.blit(pause_text, pause_text_rect) 
+
+        for button in self.buttons:
+            button.draw(self.screen)
     
     def run(self):
         self.running = True
         bgr = pygame.transform.scale(image("background/bgr_game.png"), self.display.get_size())
         while self.running:
-            self.display.blit(bgr, (0, 0))
-            
-            if self.finish:
-                if self.level < len(os.listdir("assets/maps")) - 1:
-                    self.level += 1
-                    self.load_map(self.level)
-                else:
-                    return
-            
-            if self.dead:
-                self.load_map(self.level)
-            
-            character_rect = pygame.Rect(self.player.position[0], 
-                                         self.player.position[1], 
-                                         self.player.character_size[0], 
-                                         self.player.character_size[1])
-            self.offset[0] += (character_rect.centerx - self.display.get_width() / 2 - self.offset[0]) / 15
-            self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 15
-            render_offset = (int(self.offset[0]), int(self.offset[1]))
-
-            for spike in self.tilemap.neighbouring_spikes(self.player.position):
-                if character_rect.colliderect(spike["rect"]):
-                    offset = (spike["rect"].x - self.player.position[0],
-                                spike["rect"].y - self.player.position[1])
-
-                    if self.player.mask.overlap(spike["mask"], offset):
-                        self.dead = True
-                        break
-
-            self.clouds_far.update()
-            self.clouds_close.update()
-            self.clouds_far.render(self.display, render_offset)
-            self.clouds_close.render(self.display, render_offset)
-            self.tilemap.render(self.display, render_offset)
-            
-            if not self.dead:
-                self.player.update(self.tilemap, 
-                                (self.movement[1] - self.movement[0], 0))
-                self.player.render(self.display, render_offset)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -108,15 +93,77 @@ class Game:
                     if event.key == pygame.K_w:
                         self.player.jump()
                     if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
+                        self.movement[0] = False
+                        self.movement[1] = False 
+                        self.paused = not self.paused
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False
                     if event.key == pygame.K_d:
                         self.movement[1] = False
+                if self.paused:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_pos = pygame.mouse.get_pos()
+                        if event.button == 1:
+                            for button in self.buttons:
+                                if button.rect.collidepoint(mouse_pos):
+                                    if button.text == "resume":
+                                        self.paused = False
+                                    if button.text == "return to main menu":
+                                        from main_menu import Menu
+                                        menu = Menu()
+                                        menu.run()
 
+            if not self.paused:
+
+                if self.finish:
+                    if self.level < len(os.listdir("assets/maps")) - 1:
+                        self.level += 1
+                        self.load_map(self.level)
+                    else:
+                        return
+            
+                if self.dead:
+                    self.load_map(self.level)
+            
+                character_rect = pygame.Rect(self.player.position[0], 
+                                            self.player.position[1], 
+                                            self.player.character_size[0], 
+                                            self.player.character_size[1])
+                self.offset[0] += (character_rect.centerx - self.display.get_width() / 2 - self.offset[0]) / 15
+                self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 15
+
+                for spike in self.tilemap.neighbouring_spikes(self.player.position):
+                    if character_rect.colliderect(spike["rect"]):
+                        offset = (spike["rect"].x - self.player.position[0],
+                                    spike["rect"].y - self.player.position[1])
+
+                        if self.player.mask.overlap(spike["mask"], offset):
+                            self.dead = True
+                            break
+
+                self.clouds_far.update()
+                self.clouds_close.update()
+            
+                if not self.dead:
+                    self.player.update(self.tilemap, 
+                                    (self.movement[1] - self.movement[0], 0))
+                    
+            self.display.blit(bgr, (0, 0))
+            render_offset = (int(self.offset[0]), int(self.offset[1]))
+
+            self.clouds_far.render(self.display, render_offset)
+            self.clouds_close.render(self.display, render_offset)
+            self.tilemap.render(self.display, render_offset)
+            
+            if not self.dead:
+                self.player.render(self.display, render_offset)
+            
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+
+            if self.paused:
+                self.pause()
+
             pygame.display.update()
             self.clock.tick(60)
 

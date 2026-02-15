@@ -2,7 +2,6 @@ import pygame
 import os
 
 from scripts.utilities import image
-from game import Game
 from scripts.button import Button
 
 class Levels:
@@ -61,6 +60,7 @@ class Levels:
                                 if button.text == "back":
                                     return
                                 else:
+                                    from game import Game
                                     game = Game(start_level=(int(button.text) - 1))
                                     game.run()
             
