@@ -58,11 +58,9 @@ class Levels:
                         for button in self.buttons:
                             if button.rect.collidepoint(mouse_pos):
                                 if button.text == "back":
-                                    return
+                                    return "menu"
                                 else:
-                                    from game import Game
-                                    game = Game(start_level=(int(button.text) - 1))
-                                    game.run()
+                                    return ("game", int(button.text) - 1)
             
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))
             pygame.display.update()

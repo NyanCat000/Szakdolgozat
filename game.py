@@ -1,4 +1,3 @@
-import sys
 import pygame
 import os
 
@@ -110,9 +109,7 @@ class Game:
                                     if button.text == "resume":
                                         self.paused = False
                                     if button.text == "return to main menu":
-                                        from main_menu import Menu
-                                        menu = Menu()
-                                        menu.run()
+                                        return "menu"
 
             if not self.paused:
 
@@ -121,7 +118,7 @@ class Game:
                         self.level += 1
                         self.load_map(self.level)
                     else:
-                        return
+                        return "levels"
             
                 if self.dead:
                     self.load_map(self.level)
