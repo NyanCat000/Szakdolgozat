@@ -80,6 +80,7 @@ class Menu:
                     if event.button == 1:
                         if self.confirm:
                             for button in self.confirm_buttons:
+                                button.sound(event)
                                 if button.rect.collidepoint(mouse_pos):
                                     if button.text == "Yes":
                                         return "quit"
@@ -87,6 +88,7 @@ class Menu:
                                         self.confirm = False
                         else:
                             for button in self.buttons:
+                                button.sound(event)
                                 if button.rect.collidepoint(mouse_pos):
                                     if button.text == "levels":
                                         return "levels"

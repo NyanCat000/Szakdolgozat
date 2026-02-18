@@ -91,6 +91,7 @@ class Settings:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         for i in range(len(self.buttons)):
+                            self.buttons[i].sound(event)
                             if self.buttons[i].rect.collidepoint(mouse_pos):
                                 if i == 0:
                                     self.main.menu_volume = max(0, self.main.menu_volume - 0.05)

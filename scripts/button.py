@@ -18,6 +18,9 @@ class Button:
         self.border_radius = border_radius
         self.border_width = border_width
 
+        self.click_sound = pygame.mixer.Sound("assets/sound_effects/click.wav")
+        self.click_sound.set_volume(0.1)
+
         self.render_text()
 
     def render_text(self):
@@ -34,3 +37,9 @@ class Button:
         pygame.draw.rect(surface, current_color, self.rect, border_radius=self.border_radius)
         pygame.draw.rect(surface, self.border_color, self.rect, self.border_width, self.border_radius)
         surface.blit(self.text_surface, self.text_rect)
+
+    def sound(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if self.rect.collidepoint(event.pos):
+                    self.click_sound.play()

@@ -55,6 +55,7 @@ class Levels:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         for button in self.buttons:
+                            button.sound(event)
                             if button.rect.collidepoint(mouse_pos):
                                 if button.text == "back":
                                     return "menu"

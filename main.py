@@ -66,6 +66,10 @@ class Main:
                     self.state = "menu"
                 elif action == "levels":
                     self.state = "levels"
+                elif action == "controls":
+                    self.state = "controls"
+                elif action == "settings":
+                    self.state = "settings"
 
             elif self.state == "levels":
                 self.music("assets/music/menu_music.wav")

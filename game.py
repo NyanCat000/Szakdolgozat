@@ -70,7 +70,7 @@ class Game:
         self.transition_newmap = True
     
     def pause_buttons(self):
-        button_names = ["resume", "options", "controls", "return to main menu"]
+        button_names = ["resume", "settings", "controls", "return to main menu"]
         center_y = self.screen.get_height() / 2 - 75
         y_offset = 150
 
@@ -122,11 +122,16 @@ class Game:
                         mouse_pos = pygame.mouse.get_pos()
                         if event.button == 1:
                             for button in self.buttons:
+                                button.sound(event)
                                 if button.rect.collidepoint(mouse_pos):
                                     if button.text == "resume":
                                         self.paused = False
                                     if button.text == "return to main menu":
                                         return "menu"
+                                    if button.text == "settings":
+                                        return "settings"
+                                    if button.text == "controls":
+                                        return "controls"
 
             if not self.paused:
                 if self.ambience.get_num_channels() == 0:
