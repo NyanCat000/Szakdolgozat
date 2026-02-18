@@ -4,9 +4,9 @@ from scripts.utilities import image
 from scripts.button import Button
 
 class Menu:
-    def __init__(self):
+    def __init__(self, screen):
         pygame.init()
-        self.screen = pygame.display.set_mode((0, 0))
+        self.screen = screen
         self.screen_size = self.screen.get_size()
         self.display = pygame.Surface((self.screen_size[0], self.screen_size[1]))
         self.clock = pygame.time.Clock()
@@ -72,7 +72,7 @@ class Menu:
     
     def run(self):
         bgr = pygame.transform.scale(image("background/bgr_game.png"), self.display.get_size())
-        
+
         while True:
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
@@ -92,6 +92,8 @@ class Menu:
                                         return "levels"
                                     if button.text == "quit":
                                         self.confirm = True
+                                    if button.text == "controls":
+                                        return "controls"
                 
             
             self.display.blit(bgr, (0, 0))

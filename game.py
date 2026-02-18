@@ -9,9 +9,9 @@ from scripts.clouds import Clouds
 from scripts.button import Button
 
 class Game:
-    def __init__(self, start_level = 0):
+    def __init__(self, screen, start_level = 0):
         pygame.init()
-        self.screen = pygame.display.set_mode((0, 0))
+        self.screen = screen
         self.screen_size = self.screen.get_size()
         self.display = pygame.Surface((self.screen_size[0]/6, self.screen_size[1]/6))
         self.clock = pygame.time.Clock()
@@ -44,7 +44,7 @@ class Game:
         self.walk = pygame.mixer.Sound("assets/sound_effects/walk.wav")
         self.ambience.set_volume(0.15)
         self.die.set_volume(0.15)
-        self.finish_sfx.set_volume(0.3)
+        self.finish_sfx.set_volume(0.8)
         self.jump.set_volume(0.15)
         self.walk.set_volume(0.1)
 
