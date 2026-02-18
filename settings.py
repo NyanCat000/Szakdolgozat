@@ -5,10 +5,11 @@ from scripts.utilities import image
 from scripts.button import Button
 
 class Settings:
-    def __init__(self, main, screen):
+    def __init__(self, main, screen, return_to="menu"):
         pygame.init()
         self.main = main
         self.screen = screen
+        self.return_to = return_to
         self.screen_size = self.screen.get_size()
         self.display = pygame.Surface((self.screen_size[0], self.screen_size[1]))
         self.clock = pygame.time.Clock()
@@ -102,7 +103,7 @@ class Settings:
                                 elif i == 3:
                                     self.main.game_volume = min(1.0, self.main.game_volume + 0.05)
                                 elif self.buttons[i].text == "back":
-                                    return "menu"
+                                    return self.return_to
                                 elif self.buttons[i].text == "save":
                                     return "save"
                                 

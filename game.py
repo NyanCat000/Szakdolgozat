@@ -85,6 +85,10 @@ class Game:
 
     def pause(self):
         self.ambience.stop()
+        self.die.stop()
+        self.finish_sfx.stop()
+        self.jump.stop()
+        self.walk.stop()
         bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.screen_size)
         bgr.set_alpha(100)
 
@@ -129,9 +133,9 @@ class Game:
                                     if button.text == "return to main menu":
                                         return "menu"
                                     if button.text == "settings":
-                                        return "settings"
+                                        return "settings_game"
                                     if button.text == "controls":
-                                        return "controls"
+                                        return "controls_game"
 
             if not self.paused:
                 if self.ambience.get_num_channels() == 0:

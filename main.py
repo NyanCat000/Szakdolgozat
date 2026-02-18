@@ -17,6 +17,8 @@ class Main:
         self.menu_volume = 0.05
         self.game_volume = 0.05
 
+        self.new_game = False
+
         self.load()
 
     def music(self, path):
@@ -59,17 +61,20 @@ class Main:
                     sys.exit()
 
             elif self.state == "game":
-                game = Game(self.screen, start_level=level)
+                if not self.new_game:
+                    self.new_game = True
+                    game = Game(self.screen, start_level=level)
                 self.music("assets/music/game_music.wav")
                 action = game.run()
                 if action == "menu":
+                    self.new_game = False
                     self.state = "menu"
                 elif action == "levels":
                     self.state = "levels"
-                elif action == "controls":
-                    self.state = "controls"
-                elif action == "settings":
-                    self.state = "settings"
+                elif action == "controls_game":
+                    self.state = "controls_game"
+                elif action == "settings_game":
+                    self.state = "settings_game"
 
             elif self.state == "levels":
                 self.music("assets/music/menu_music.wav")
@@ -79,6 +84,7 @@ class Main:
                     self.state = "menu"
                 elif action[0] == "game":
                     level = action[1]
+                    self.new_game = False
                     self.state = "game"
                 
             elif self.state == "controls":
@@ -87,6 +93,12 @@ class Main:
                 action = controls.run()
                 if action == "menu":
                     self.state = "menu"
+            elif self.state == "controls_game":
+                self.music("assets/music/game_music.wav")
+                controls = Controls(self.screen, "game")
+                action = controls.run()
+                if action == "game":
+                    self.state = "game"
 
             elif self.state == "settings":
                 self.music("assets/music/menu_music.wav")
@@ -96,6 +108,12 @@ class Main:
                     self.state = "menu"
                 if action == "save":
                     self.save()
+            elif self.state == "settings_game":
+                self.music("assets/music/game_music.wav")
+                settings = Settings(self, self.screen, "game")
+                action = settings.run()
+                if action == "game":
+                    self.state = "game"
 
 
 if __name__ == "__main__":

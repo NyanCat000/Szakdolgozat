@@ -4,9 +4,10 @@ from scripts.utilities import image
 from scripts.button import Button
 
 class Controls:
-    def __init__(self, screen):
+    def __init__(self, screen, return_to = "menu"):
         pygame.init()
         self.screen = screen
+        self.return_to = return_to
         self.screen_size = self.screen.get_size()
         self.display = pygame.Surface((self.screen_size[0], self.screen_size[1]))
         self.clock = pygame.time.Clock()
@@ -55,7 +56,7 @@ class Controls:
                         for button in self.buttons:
                             button.sound(event)
                             if button.rect.collidepoint(mouse_pos):
-                                return "menu"
+                                return self.return_to
             
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))
             pygame.display.update()

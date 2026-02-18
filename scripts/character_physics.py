@@ -153,9 +153,13 @@ class Player(Physics):
 
                 self.game.transition = True
                 self.game.transition_newmap = False
+                
+                self.game.walk.stop()
                 self.game.finish_sfx.play()
 
     def jump(self):
+        if self.enter_finish:
+            return
         if self.air_time < 4:
             if self.jumps > 0:
                 self.velocity[1] = -4
