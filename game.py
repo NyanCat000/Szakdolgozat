@@ -36,7 +36,18 @@ class Game:
             "player/run": Animation(images("characters/player/run"), duration=5),
             "player/jump": Animation(images("characters/player/jump"), duration=10)
         }
-        
+
+        self.ambience = pygame.mixer.Sound("assets/sound_effects/ambience.wav")
+        self.die = pygame.mixer.Sound("assets/sound_effects/die.wav")
+        self.finish_sfx = pygame.mixer.Sound("assets/sound_effects/finish.wav")
+        self.jump = pygame.mixer.Sound("assets/sound_effects/jump.wav")
+        self.walk = pygame.mixer.Sound("assets/sound_effects/walk.wav")
+        self.ambience.set_volume(0.15)
+        self.die.set_volume(0.15)
+        self.finish_sfx.set_volume(0.3)
+        self.jump.set_volume(0.15)
+        self.walk.set_volume(0.1)
+
         self.clouds_close = Clouds(image("clouds/0.png"), type = 0, count=4)
         self.clouds_far = Clouds(image("clouds/1.png"), type = 1, count=3)
         self.tilemap = Tilemap(self)
@@ -73,6 +84,7 @@ class Game:
             self.buttons.append(button)
 
     def pause(self):
+        self.ambience.stop()
         bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.screen_size)
         bgr.set_alpha(100)
 
@@ -85,10 +97,9 @@ class Game:
             button.draw(self.screen)
     
     def run(self):
-        self.running = True
         bgr = pygame.transform.scale(image("background/bgr_game.png"), self.display.get_size())
-        while self.running:
 
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_a:
@@ -118,6 +129,8 @@ class Game:
                                         return "menu"
 
             if not self.paused:
+                if self.ambience.get_num_channels() == 0:
+                    self.ambience.play(-1)
                 if self.finish:
                     if self.level < len(os.listdir("assets/maps")) - 1:
                         self.level += 1
@@ -154,6 +167,7 @@ class Game:
 
                         if self.player.mask.overlap(spike["mask"], offset):
                             self.dead = True
+                            self.die.play()
                             break
 
                 self.clouds_far.update()

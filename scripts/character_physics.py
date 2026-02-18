@@ -64,6 +64,12 @@ class Physics:
         elif movement[0] > 0:
             self.flip = False
 
+        if movement[0] != 0:
+            if self.game.walk.get_num_channels() == 0:
+                self.game.walk.play(-1)
+        else:
+            self.game.walk.stop()
+
         self.animation.update()
         
     def render(self, surface, offset=(0, 0)):
@@ -121,8 +127,10 @@ class Player(Physics):
 
         if self.air_time > 100:
             self.game.dead = True
+            self.game.die.play()
 
         if self.air_time > 3:
+            self.game.walk.stop()
             self.current_action("jump")
         elif movement[0] != 0:
             self.current_action("run")
@@ -145,6 +153,7 @@ class Player(Physics):
 
                 self.game.transition = True
                 self.game.transition_newmap = False
+                self.game.finish_sfx.play()
 
     def jump(self):
         if self.air_time < 4:
@@ -152,6 +161,7 @@ class Player(Physics):
                 self.velocity[1] = -4
                 self.jumps -= 1
                 self.air_time = 4
+                self.game.jump.play()
 
     
         

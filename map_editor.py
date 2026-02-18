@@ -41,8 +41,7 @@ class Editor:
         
     
     def run(self):
-        self.running = True
-        while self.running:
+        while True:
             self.display.fill((0, 0, 255))
             
             self.offset[0] += (self.movement[1] - self.movement[0]) * 2

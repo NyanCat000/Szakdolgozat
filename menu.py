@@ -71,11 +71,9 @@ class Menu:
 
     
     def run(self):
-        self.running = True
         bgr = pygame.transform.scale(image("background/bgr_game.png"), self.display.get_size())
         
-        while self.running:
-
+        while True:
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:

@@ -38,13 +38,12 @@ class Levels:
         self.buttons.append(back_button)
     
     def run(self):
-        self.running = True
         bgr = pygame.transform.scale(image("background/bgr_menu.png"), self.display.get_size())
 
         levels_text = self.main_font.render("levels", True, (65, 65, 65))
         levels_text_rect = levels_text.get_rect(center=(self.display.get_width() / 2, 100))
        
-        while self.running:
+        while True:
             self.display.blit(bgr, (0, 0))
             self.display.blit(levels_text, levels_text_rect)
             mouse_pos = pygame.mouse.get_pos()
