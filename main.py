@@ -1,24 +1,46 @@
 import pygame
 import sys
+import json
 
 from menu import Menu
 from game import Game
 from levels import Levels
 from controls import Controls
+from settings import Settings
 
 class Main:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((0, 0))
         self.state = "menu"
-        self.current_music = None
+        self.current_music = ""
+        self.menu_volume = 0.05
+        self.game_volume = 0.05
+
+        self.load()
 
     def music(self, path):
         if self.current_music != path:
             pygame.mixer.music.load(path)
-            pygame.mixer.music.set_volume(0.05)
+            if "menu" in path:
+                pygame.mixer.music.set_volume(self.menu_volume)
+            else: pygame.mixer.music.set_volume(self.game_volume)
             pygame.mixer.music.play(-1)
             self.current_music = path
+    
+    def save(self):
+        file = open("settings.json", "w")
+        json.dump({"menu_volume": self.menu_volume, "game_volume": self.game_volume}, file)
+        file.close()
+        
+    def load(self):
+        file = open("settings.json", "r")
+        settings_data = json.load(file)
+        file.close()
+        
+        self.menu_volume = settings_data["menu_volume"]
+        self.game_volume = settings_data["game_volume"]
+    
     
     def run(self):
         while True:
@@ -30,6 +52,8 @@ class Main:
                     self.state = "levels"
                 elif action == "controls":
                     self.state = "controls"
+                elif action == "settings":
+                    self.state = "settings"
                 elif action == "quit":
                     pygame.quit()
                     sys.exit()
@@ -60,7 +84,14 @@ class Main:
                 if action == "menu":
                     self.state = "menu"
 
-
+            elif self.state == "settings":
+                self.music("assets/music/menu_music.wav")
+                settings = Settings(self, self.screen)
+                action = settings.run()
+                if action == "menu":
+                    self.state = "menu"
+                if action == "save":
+                    self.save()
 
 
 if __name__ == "__main__":

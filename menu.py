@@ -22,7 +22,7 @@ class Menu:
         self.buttons_rect()
     
     def buttons_rect(self):
-        button_names = ["levels", "options", "controls", "quit"]
+        button_names = ["levels", "settings", "controls", "quit"]
         center_y = self.display.get_height() / 2 - 75
         y_offset = 150
 
@@ -94,6 +94,8 @@ class Menu:
                                         self.confirm = True
                                     if button.text == "controls":
                                         return "controls"
+                                    if button.text == "settings":
+                                        return "settings"
                 
             
             self.display.blit(bgr, (0, 0))

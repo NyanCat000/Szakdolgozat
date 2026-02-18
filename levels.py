@@ -32,7 +32,7 @@ class Levels:
             button_y_position = start_y + row * (button_size + gap)
 
             button = Button((button_x_position, button_y_position, button_size, button_size),
-                            f"{level+1}",self.secondary_font, border_radius=150)
+                            f"{level+1}",self.secondary_font, border_radius=40)
             self.buttons.append(button)
         back_button = Button((10, 20, 150, 80), "back",self.back_font, border_radius=150)
         self.buttons.append(back_button)
