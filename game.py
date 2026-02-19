@@ -8,6 +8,8 @@ from scripts.character_physics import Player
 from scripts.clouds import Clouds
 from scripts.button import Button
 
+from scripts.pathfinding import Pathfinding
+
 class Game:
     def __init__(self, screen, start_level = 0):
         pygame.init()
@@ -68,6 +70,67 @@ class Game:
         self.transition_step = 50
         self.transition = True
         self.transition_newmap = True
+
+        self.pathfinding = Pathfinding(self.tilemap)
+        self.debug_nodes = self.pathfinding.debug_nodes()
+
+    def render_debug_nodes(self, offset = (0,0)):
+        mx, my = pygame.mouse.get_pos()
+        scale_x = self.screen.get_width() / self.display.get_width()
+        scale_y = self.screen.get_height() / self.display.get_height()
+        
+        if scale_x == 0 or scale_y == 0: return 
+
+        world_mx = mx / scale_x + offset[0]
+        world_my = my / scale_y + offset[1]
+
+        closest_node = None
+        min_dist = 1000
+        tile_size = self.tilemap.tile_size
+        
+        for node in self.debug_nodes:
+            px = node[0] * tile_size + tile_size // 2
+            py = node[1] * tile_size + tile_size // 2
+            
+            dist = ((world_mx - px)**2 + (world_my - py)**2)**0.5
+            
+            if dist < 30: 
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_node = node
+
+        for node in self.debug_nodes:
+            px = node[0] * tile_size + tile_size // 2
+            py = node[1] * tile_size + tile_size // 2
+
+            screen_px = px - offset[0]
+            screen_py = py - offset[1]
+            
+            if node == closest_node:
+                color = (255, 255, 0)
+            else:
+                color = (255, 0, 0) 
+
+            pygame.draw.circle(self.display, color, (screen_px, screen_py), 2)
+
+        if closest_node:
+            cx, cy = closest_node
+            start_pix = ((cx * tile_size + tile_size // 2) - offset[0], (cy * tile_size + tile_size // 2) - offset[1])
+
+            def draw_links(neighbors, color):
+                for n in neighbors:
+                    end_pix = ((n[0] * tile_size + tile_size // 2) - offset[0], (n[1] * tile_size + tile_size // 2) - offset[1])
+                    pygame.draw.line(self.display, color, start_pix, end_pix, 1)
+
+            
+            walks = self.pathfinding.walkable_neighbour_nodes((cx, cy))
+            drops = self.pathfinding.drop_neighbour_nodes((cx, cy))
+            jumps = self.pathfinding.jump_neighbour_nodes((cx, cy))
+
+            
+            draw_links(jumps, (255, 0, 255))
+            draw_links(drops, (0, 100, 255))
+            draw_links(walks, (0, 255, 0))
     
     def pause_buttons(self):
         button_names = ["resume", "settings", "controls", "return to main menu"]
@@ -186,14 +249,14 @@ class Game:
                     self.player.update(self.tilemap, 
                                     (self.movement[1] - self.movement[0], 0))
                     
-                
-                    
             self.display.blit(bgr, (0, 0))
             render_offset = (int(self.offset[0]), int(self.offset[1]))
 
             self.clouds_far.render(self.display, render_offset)
             self.clouds_close.render(self.display, render_offset)
             self.tilemap.render(self.display, render_offset)
+            
+            self.render_debug_nodes(render_offset)
             
             if not self.dead:
                 self.player.render(self.display, render_offset)
