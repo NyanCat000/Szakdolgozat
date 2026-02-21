@@ -54,7 +54,7 @@ class Pathfinding:
         return neighbours
     
     def is_path_clear(self, start_position, goal_position, jump_height):
-        max_height = start_position[1] - jump_height
+        max_height = min(start_position[1], goal_position[1]) - jump_height
         
         if goal_position[0] > start_position[0]:
             direction = 1
@@ -75,11 +75,11 @@ class Pathfinding:
     def neighbour_nodes(self, position):
         neighbours = []
         for nodes in self.walkable_neighbour_nodes(position):
-            neighbours.append(nodes)
+            neighbours.append((nodes, "walk"))
         for nodes in self.drop_neighbour_nodes(position):
-            neighbours.append(nodes)
+            neighbours.append((nodes, "drop"))
         for nodes in self.jump_neighbour_nodes(position):
-            neighbours.append(nodes)
+            neighbours.append((nodes, "jump"))
         return neighbours
 
     def debug_nodes(self):
@@ -112,9 +112,10 @@ class Pathfinding:
         path = []
         current = goal
         while current != start:
-            path.append(current)
-            current = came_from[current]
-        path.append(start)
+            previous_node, action = came_from[current]
+            path.append((current, action))
+            current = previous_node
+        path.append((start, ""))
         path.reverse()
         return path
 
@@ -149,7 +150,7 @@ class Pathfinding:
             neighbours = self.neighbour_nodes(current)
             i = 0
             while i < len(neighbours):
-                neighbour = neighbours[i]
+                neighbour, action = neighbours[i]
 
                 if neighbour in closed:
                     i += 1
@@ -159,7 +160,7 @@ class Pathfinding:
 
                 if neighbour not in g_cost or tentative_g < g_cost[neighbour]:
                     g_cost[neighbour] = tentative_g
-                    came_from[neighbour] = current
+                    came_from[neighbour] = (current, action)
 
                     f = g_cost[neighbour] + self.manhattan_distance(neighbour, goal)
                     heapq.heappush(frontier, (f, neighbour))

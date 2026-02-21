@@ -64,12 +64,6 @@ class Physics:
         elif movement[0] > 0:
             self.flip = False
 
-        if movement[0] != 0:
-            if self.game.walk.get_num_channels() == 0:
-                self.game.walk.play(-1)
-        else:
-            self.game.walk.stop()
-
         self.animation.update()
         
     def render(self, surface, offset=(0, 0)):
@@ -129,6 +123,12 @@ class Player(Physics):
             self.game.dead = True
             self.game.die.play()
 
+        if movement[0] != 0:
+            if self.game.walk.get_num_channels() == 0:
+                self.game.walk.play(-1)
+        else:
+            self.game.walk.stop()
+        
         if self.air_time > 3:
             self.game.walk.stop()
             self.current_action("jump")
@@ -167,5 +167,66 @@ class Player(Physics):
                 self.air_time = 4
                 self.game.jump.play()
 
+class Ai(Physics):
+    def __init__(self, game, position, character_size):
+        super().__init__(game, "ai", position, character_size)
+        self.path = []
+        self.enter_finish = False
+        self.jump_target = None
+
+    def update(self, tilemap):
+        movement = [0,0]
+        if self.path:
+            target_node, action = self.path[0]
+            target_x = target_node[0] * tilemap.tile_size + tilemap.tile_size // 2
+            character_x = self.position[0] + self.character_size[0] // 2
+            
+            dist_x = abs(character_x - target_x)
+            dist_y = abs(self.position[1] + self.character_size[1] - (target_node[1] + 1) * tilemap.tile_size)
+            
+            if dist_x > 2:
+                if character_x < target_x:
+                    movement[0] = 1
+                else: 
+                    movement[0] = -1
+            if action == "jump":
+                if self.jump_target != target_node:
+                    if self.collisions["down"]:
+                        self.velocity[1] = -4
+                        self.jump_target = target_node
+
+            if action == "drop":
+                if character_x < target_x:
+                    movement[0] = 1
+                else: movement[0] = -1 
+
+            if self.collisions["down"]:
+                self.air_time = 0
+            else:
+                self.air_time += 1
+
+            if self.air_time >3:
+                self.current_action("jump")
+            elif movement[0] != 0:
+                self.current_action("run")
+            else:
+                self.current_action("idle")
+            
+            if dist_x < 4 and dist_y < 2 and self.collisions["down"]:
+                self.path.pop(0)
+
+        super().update(tilemap, movement)
     
-        
+    def calculate_path(self, goal):
+        character_rect = pygame.Rect(self.position[0], 
+                           self.position[1], 
+                           self.character_size[0], 
+                           self.character_size[1])
+        player_node = self.game.pathfinding.player_current_node(character_rect)
+        if player_node:
+            path = self.game.pathfinding.astar_pathfinding(player_node, goal)
+            if path:
+                self.path = path
+                if len(self.path) > 0:
+                    self.path.pop(0)
+   

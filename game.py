@@ -4,7 +4,7 @@ import math
 
 from scripts.utilities import image, images, Animation
 from scripts.tilemap import Tilemap
-from scripts.character_physics import Player
+from scripts.character_physics import Player, Ai
 from scripts.clouds import Clouds
 from scripts.button import Button
 
@@ -15,7 +15,7 @@ class Game:
         pygame.init()
         self.screen = screen
         self.screen_size = self.screen.get_size()
-        self.display = pygame.Surface((self.screen_size[0]/6, self.screen_size[1]/6))
+        self.display = pygame.Surface((self.screen_size[0]//6, self.screen_size[1]//6))
         self.clock = pygame.time.Clock()
         
         self.movement = [False, False]
@@ -36,7 +36,10 @@ class Game:
             "finish": images("tiles/finish"),
             "player/idle": Animation(images("characters/player/idle"), duration=6),
             "player/run": Animation(images("characters/player/run"), duration=5),
-            "player/jump": Animation(images("characters/player/jump"), duration=10)
+            "player/jump": Animation(images("characters/player/jump"), duration=10),
+            "ai/idle": Animation(images("characters/ai/idle"), duration=6),
+            "ai/run": Animation(images("characters/ai/run"), duration=5),
+            "ai/jump": Animation(images("characters/ai/jump"), duration=10)
         }
 
         self.ambience = pygame.mixer.Sound("assets/sound_effects/ambience.wav")
@@ -54,6 +57,7 @@ class Game:
         self.clouds_far = Clouds(image("clouds/1.png"), type = 1, count=3)
         self.tilemap = Tilemap(self)
         self.player = Player(self, (0,0), (11, 11))
+        self.ai = Ai(self, (0,0), (11, 11))
 
         self.level = start_level
         self.load_map(self.level)
@@ -201,6 +205,9 @@ class Game:
 
                         start = self.pathfinding.player_current_node(character_rect)
                         goal = self.pathfinding.finish_node()
+                        self.ai.position = [start[0] * self.tilemap.tile_size, (start[1] + 1) * self.tilemap.tile_size - self.ai.character_size[1]]
+                        self.ai.velocity = [0,0]
+                        self.ai.collisions["down"] = True
 
                         print("START:", start)
                         print("GOAL:", goal)
@@ -208,6 +215,8 @@ class Game:
                         if start and goal:
                             self.path = self.pathfinding.astar_pathfinding(start,goal)
                             print("PATH:", self.path)
+                            if self.path:
+                                self.ai.calculate_path(goal)
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False
@@ -277,6 +286,7 @@ class Game:
                 if not self.dead:
                     self.player.update(self.tilemap, 
                                     (self.movement[1] - self.movement[0], 0))
+                self.ai.update(self.tilemap)
                     
             self.display.blit(bgr, (0, 0))
             render_offset = (int(self.offset[0]), int(self.offset[1]))
@@ -287,7 +297,8 @@ class Game:
             
             self.render_debug_nodes(render_offset) ##
             if self.path: ##
-                for node in self.path:
+                self.ai.render(self.display, render_offset)
+                for (node, action) in self.path:
                     x, y = node
 
                     px = (x * self.tilemap.tile_size + self.tilemap.tile_size // 2) - render_offset[0]
