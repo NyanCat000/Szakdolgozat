@@ -179,12 +179,12 @@ class Ai(Physics):
         if self.path:
             target_node, action = self.path[0]
             target_x = target_node[0] * tilemap.tile_size + tilemap.tile_size // 2
-            character_x = self.position[0] + self.character_size[0] // 2
+            character_x = self.position[0] + (self.character_size[0] + 1) // 2
             
             dist_x = abs(character_x - target_x)
             dist_y = abs(self.position[1] + self.character_size[1] - (target_node[1] + 1) * tilemap.tile_size)
             
-            if dist_x > 2:
+            if dist_x > 0:
                 if character_x < target_x:
                     movement[0] = 1
                 else: 
@@ -192,7 +192,7 @@ class Ai(Physics):
             if action == "jump":
                 if self.jump_target != target_node:
                     if self.collisions["down"]:
-                        self.velocity[1] = -4
+                        self.velocity[1] = -4.5
                         self.jump_target = target_node
 
             if action == "drop":
@@ -227,6 +227,4 @@ class Ai(Physics):
             path = self.game.pathfinding.astar_pathfinding(player_node, goal)
             if path:
                 self.path = path
-                if len(self.path) > 0:
-                    self.path.pop(0)
    

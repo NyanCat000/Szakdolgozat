@@ -56,13 +56,15 @@ class Game:
         self.clouds_close = Clouds(image("clouds/0.png"), type = 0, count=4)
         self.clouds_far = Clouds(image("clouds/1.png"), type = 1, count=3)
         self.tilemap = Tilemap(self)
-        self.player = Player(self, (0,0), (11, 11))
-        self.ai = Ai(self, (0,0), (11, 11))
+        self.player = Player(self, (0,0), (10, 11))
+        self.ai = Ai(self, (0,0), (10, 11))
 
         self.level = start_level
         self.load_map(self.level)
 
         self.path = None ##
+        self.ai_on = False
+        self.nodes = []
 
     def load_map(self, map):
         self.tilemap.load(f"assets/maps/{map}.json")
@@ -198,23 +200,27 @@ class Game:
                         self.movement[1] = False 
                         self.paused = not self.paused
                     if event.key == pygame.K_p: ##
+                        self.ai_on = True
                         character_rect = pygame.Rect(self.player.position[0], 
                                             self.player.position[1], 
                                             self.player.character_size[0], 
                                             self.player.character_size[1])
 
-                        start = self.pathfinding.player_current_node(character_rect)
+                        start = self.nodes.pop()
+                        self.nodes.clear()
+                        self.nodes.append(start)
+                        print(self.nodes)
                         goal = self.pathfinding.finish_node()
+
                         self.ai.position = [start[0] * self.tilemap.tile_size, (start[1] + 1) * self.tilemap.tile_size - self.ai.character_size[1]]
                         self.ai.velocity = [0,0]
                         self.ai.collisions["down"] = True
-
-                        print("START:", start)
-                        print("GOAL:", goal)
+                        self.ai.path = []
+                        self.ai.air_time = 0
+                        self.ai.jump_target = None
                                             
                         if start and goal:
                             self.path = self.pathfinding.astar_pathfinding(start,goal)
-                            print("PATH:", self.path)
                             if self.path:
                                 self.ai.calculate_path(goal)
                 if event.type == pygame.KEYUP:
@@ -261,6 +267,7 @@ class Game:
                             self.transition = False
                     
                 if self.dead:
+                    self.nodes.clear()
                     self.load_map(self.level)
             
                 character_rect = pygame.Rect(self.player.position[0], 
@@ -286,7 +293,25 @@ class Game:
                 if not self.dead:
                     self.player.update(self.tilemap, 
                                     (self.movement[1] - self.movement[0], 0))
-                self.ai.update(self.tilemap)
+
+                current_node = self.pathfinding.player_current_node(character_rect)
+                if current_node:
+                    if current_node not in self.nodes: 
+                        self.nodes.append(current_node)
+                        print(self.nodes)
+                    elif current_node != self.nodes[len(self.nodes) - 1]:
+                        self.nodes.append(current_node)
+                        print(self.nodes)
+                
+                ai_rect = pygame.Rect(self.ai.position[0], 
+                                                self.ai.position[1], 
+                                                self.ai.character_size[0], 
+                                                self.ai.character_size[1])
+                for rect in self.tilemap.finish_tile():
+                    if ai_rect.colliderect(rect):
+                        self.ai_on = False
+                if self.ai_on:
+                    self.ai.update(self.tilemap)
                     
             self.display.blit(bgr, (0, 0))
             render_offset = (int(self.offset[0]), int(self.offset[1]))
@@ -297,7 +322,7 @@ class Game:
             
             self.render_debug_nodes(render_offset) ##
             if self.path: ##
-                self.ai.render(self.display, render_offset)
+                
                 for (node, action) in self.path:
                     x, y = node
 
@@ -310,7 +335,8 @@ class Game:
                         (px, py),
                         3
                     )
-            
+            if self.ai_on:
+                self.ai.render(self.display, render_offset)
             if not self.dead:
                 self.player.render(self.display, render_offset)
             

@@ -3,6 +3,7 @@ import heapq
 class Pathfinding:
     def __init__(self, tilemap):
         self.tilemap = tilemap
+        self.max_fall = 100
 
     def is_node(self, position):
         check_location = f"{position[0]};{position[1] + 1}"
@@ -28,7 +29,7 @@ class Pathfinding:
                 continue
 
             if not self.is_node((position[0] + direction, position[1])):
-                for y in range(100):
+                for y in range(self.max_fall):
                     check_location = f"{position[0] + direction};{position[1] + y}"
                     if (check_location in self.tilemap.tilemap) and (self.tilemap.tilemap[check_location]["type"] == "spikes"):
                         break
@@ -41,12 +42,11 @@ class Pathfinding:
         neighbours = []
         jump_height = 3
         jump_distance = 4
-        jump_fall = 100
 
         for direction in [-1, 1]:
             for x in range(1, jump_distance + 1):
                 goal_x = position[0] + (x * direction)
-                for y in range(-jump_fall, jump_height + 1):
+                for y in range(-self.max_fall, jump_height + 1):
                     goal_y = position[1] - y
                     if self.is_node((goal_x, goal_y)):
                         if self.is_path_clear(position, (goal_x, goal_y), jump_height):
@@ -93,11 +93,11 @@ class Pathfinding:
         return nodes
 
     def player_current_node(self, player_rect):
-        player_x = int(player_rect.centerx / self.tilemap.tile_size)
-        player_y = int((player_rect.bottom - 1) / self.tilemap.tile_size)
-        for y in range(100):
+        player_x = int(player_rect.centerx // self.tilemap.tile_size)
+        player_y = int((player_rect.bottom - 1) // self.tilemap.tile_size)
+        for y in range(self.max_fall):
             if self.is_node((player_x,player_y + y)):
-                return ((player_x,player_y))
+                return ((player_x,player_y + y))
         return None
         
     def finish_node(self):
@@ -119,11 +119,14 @@ class Pathfinding:
         path.reverse()
         return path
 
-    def move_cost(self, node_a, node_b):
+    def move_cost(self, node_a, node_b, action):
         distance = abs(node_a[0] - node_b[0]) 
-        if (abs(node_a[0] - node_b[0]) == 1) and (node_a[1] == node_b[1]):
+        if action == "walk":
             return 1
-        return distance + 6
+        if action == "drop":
+            return 2
+        if action == "jump":
+            return distance * 2 + 3
     
     def manhattan_distance(self, node_a, node_b):
         return abs(node_a[0] - node_b[0]) + abs(node_a[1] - node_b[1])
@@ -156,7 +159,7 @@ class Pathfinding:
                     i += 1
                     continue
 
-                tentative_g = g_cost[current] + self.move_cost(current, neighbour)
+                tentative_g = g_cost[current] + self.move_cost(current, neighbour, action)
 
                 if neighbour not in g_cost or tentative_g < g_cost[neighbour]:
                     g_cost[neighbour] = tentative_g
