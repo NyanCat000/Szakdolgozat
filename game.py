@@ -201,8 +201,8 @@ class Game:
                                             self.player.position[1], 
                                             self.player.character_size[0], 
                                             self.player.character_size[1])
-                self.offset[0] += (character_rect.centerx - self.display.get_width() / 2 - self.offset[0]) / 15
-                self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 15
+                self.offset[0] += (character_rect.centerx - self.display.get_width() / 2 - self.offset[0]) / 6
+                self.offset[1] += (character_rect.centery - self.display.get_height() / 2 - self.offset[1]) / 6
 
                 for spike in self.tilemap.neighbouring_spikes(self.player.position):
                     if character_rect.colliderect(spike["rect"]):
