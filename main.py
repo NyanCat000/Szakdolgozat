@@ -11,6 +11,8 @@ from settings import Settings
 class Main:
     def __init__(self):
         pygame.init()
+        ikon = pygame.image.load("assets/images/icon.ico")
+        pygame.display.set_icon(ikon)
         self.screen = pygame.display.set_mode((0, 0))
         self.state = "menu"
         self.current_music = ""
